@@ -77,8 +77,8 @@ The map shows the taxon distributed generally across the whole county. However, 
 The following map uses mulitple layers including a probability densty distribution. This does not reflect underlying variances in recording effort, but it does give a better sense of the variation in distribution.
 
 ```{r echo=FALSE, include=TRUE, warning=FALSE,message=FALSE,error=FALSE}
-lat.long <- GBNG.to.Lat.Long(Green.Carpet.Data$Gridref)
-data.to.plot <- cbind(Green.Carpet.Data, lat.long) 
+# lat.long <- GBNG.to.Lat.Long(Green.Carpet.Data$Gridref)
+ data.to.plot <- Green.Carpet.Data
 leics_df <- tidy(leics) # Need to load broom
 #ggmap(leics_df)
 #ggplot() +
@@ -139,7 +139,7 @@ Phenology.Plot("Green Carpet Pre 1980", pre.1980$DOY)
 
 ```{r echo=FALSE, include=TRUE, warning=FALSE,message=FALSE,error=FALSE}
 lat.long <- GBNG.to.Lat.Long(pre.1980$Gridref)
-data.to.plot <- cbind(pre.1980, lat.long) 
+data.to.plot <-pre.1980
 leics_df <- tidy(leics) # Need to load broom
 #ggmap(leics_df)
 #ggplot() +
@@ -198,8 +198,8 @@ Phenology.Plot("Green Carpet Post 1980", Post.1980$DOY)
 ```
 
 ```{r echo=FALSE, include=TRUE, warning=FALSE,message=FALSE,error=FALSE}
-lat.long <- GBNG.to.Lat.Long(Post.1980$Gridref)
-data.to.plot <- cbind(Post.1980, lat.long) 
+#lat.long <- GBNG.to.Lat.Long(Post.1980$Gridref)
+data.to.plot <- Post.1980
 leics_df <- tidy(leics) # Need to load broom
 #ggmap(leics_df)
 #ggplot() +
@@ -253,8 +253,8 @@ The chart above shows all of the post 1980 records
 Post.1980.Dates <- Post.1980[strtoi(Post.1980$MM) == 7,]
 Post.1980.Dates <- na.omit(Post.1980.Dates)
 
-lat.long <- GBNG.to.Lat.Long(Post.1980.Dates$Gridref)
-data.to.plot <- cbind(Post.1980.Dates, lat.long) 
+#lat.long <- GBNG.to.Lat.Long(Post.1980.Dates$Gridref)
+data.to.plot <-Post.1980.Dates
 leics_df <- tidy(leics) # Need to load broom
 #ggmap(leics_df)
 #ggplot() +
@@ -305,8 +305,8 @@ The chart above shows the June records post 1980 which represent the single broo
 Post.1980.Dates <- Post.1980[strtoi(Post.1980$MM) == 5 ,]
 Post.1980.Dates <- na.omit(Post.1980.Dates)
 
-lat.long <- GBNG.to.Lat.Long(Post.1980.Dates$Gridref)
-data.to.plot <- cbind(Post.1980.Dates, lat.long) 
+#lat.long <- GBNG.to.Lat.Long(Post.1980.Dates$Gridref)
+data.to.plot <- Post.1980.Dates
 leics_df <- tidy(leics) # Need to load broom
 #ggmap(leics_df)
 #ggplot() +
