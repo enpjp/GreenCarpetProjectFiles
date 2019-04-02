@@ -8,7 +8,7 @@ output:
   html_document: default
 ---
 
-# Diagrams for Journal of Applied Ecology
+# Diagrams for Acdemic Paper
 
 These diagrams been created dynamically. The version with the full background code will be lodged with the data for reproducibility. The released base data will be annoymised using the guidelines published by Butterfly Conservation and contains no personal details that can be associated with individual records.
 
@@ -106,9 +106,13 @@ The data has been cleaned using the PrepareDataForETL package written by author 
 ```{r Get-data }
 # Note that we are running this implicitly from the data-raw directory
 # Changing the source location will require changing the path
-Green.Carpet.Data <- 
-  readRDS("../data-raw/Green.Carpet.Data.Rds") %>% as.data.frame()
-data("leics") # This is already part of the package so no path needed.
+#Green.Carpet.Data <- 
+#  readRDS("../data-raw/Green.Carpet.Data.Rds") %>% as.data.frame()
+
+ # This is already part of the package so no path needed.
+data("Green.Carpet.Data")
+# This is already part of the package so no path needed.
+data("leics") 
 ll_leics_df <- readRDS("../data-raw/ll_leics_df.rds") %>% as.data.frame() 
 # Outline of Leicestershire
 
