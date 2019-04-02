@@ -1,0 +1,346 @@
+---
+title: "Green Carpet Distribution"
+author: "Paul J Palmer"
+date: "21/11/2018"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# Load some libraries that are needed but not yet transferred into the package
+library(ggmap)
+library(tidyverse)
+library(broom)
+library(ggpolypath)
+library(GreenCarpetProjectFiles)
+
+```
+
+```{r include=FALSE}
+library(sp)
+library(raster)
+library(broom)
+library(ggpolypath)
+# This code makes a plogon stencil to mask the edge of the map.
+bb <- unlist(attr(leics,"bb"))
+# Note in the online example I based this on coords were transposed!
+coords <- cbind(
+  bb[c(1,3,3,1)],
+  bb[c(2,2,4,4)]
+)
+
+sp <- SpatialPolygons(
+  list(Polygons(list(Polygon(coords)), "id")), 
+  proj4string = CRS(proj4string(leics)))
+sp_diff <- erase(sp, leics)
+sp_diff_df <- fortify(sp_diff) # This is a stencil with a leicestershire shape hole.
+
+```
+
+## R Setup Code
+
+
+First load the data
+
+```{r Get-data, echo=TRUE, message=FALSE, warning=FALSE }
+# Note that we are running this implicitly from the data-raw directory
+#Green.Carpet.Data <- readRDS("Green.Carpet.Data.Rds")
+data("Green.Carpet.Data")
+data("leics")
+```
+
+
+
+## A first plot
+
+```{r A-first-plot, echo=FALSE, include=TRUE}
+#this is a test
+data("leics")
+Phenology.Plot("Green Carpet All Data", Green.Carpet.Data$DOY)
+data("leics")
+```
+
+
+Note the data has three peaks showing multiple flight times for the the imago.
+
+```{r A-first-map, echo=FALSE, include=TRUE}
+Plot.Maps("All data", Green.Carpet.Data$Gridref, leics)
+```
+
+
+The map shows the taxon distributed generally across the whole county. However, this type of presence-absence map does not show the density of the distribution.
+
+## An improved representation including density
+
+The following map uses mulitple layers including a probability densty distribution. This does not reflect underlying variances in recording effort, but it does give a better sense of the variation in distribution.
+
+```{r echo=FALSE, include=TRUE, warning=FALSE,message=FALSE,error=FALSE}
+lat.long <- GBNG.to.Lat.Long(Green.Carpet.Data$Gridref)
+data.to.plot <- cbind(Green.Carpet.Data, lat.long) 
+leics_df <- tidy(leics) # Need to load broom
+#ggmap(leics_df)
+#ggplot() +
+ #   geom_path(data = leics_df, aes(x = long, y = lat, group = group)) +
+#    labs(title = "ggplot map of roads")
+
+
+
+ my.map <- ggplot() + geom_path(data = leics_df, aes(x = long, y = lat, group = group)) + 
+  stat_density_2d(  aes( x = Long, y = Lat, fill = stat(level)  ), size = 2, bins = 10, data = data.to.plot, geom = "polygon", contour = TRUE, show.legend = FALSE) +
+  scale_fill_gradient(low = "grey", high= "black") +
+    geom_point(data = data.to.plot, aes(x = Long, y = Lat)) + geom_polygon(data = leics_df, fill=NA, colour="black", aes(x = long, y = lat, group = group)) +
+   theme(axis.line=element_blank(),
+      axis.text.x=element_blank(),
+      axis.text.y=element_blank(),
+      axis.ticks=element_blank(),
+      axis.title.x=element_blank(),
+      axis.title.y=element_blank(),
+      legend.position="none",
+      panel.background=element_blank(),
+      panel.border=element_blank(),
+      panel.grid.major=element_blank(),
+      panel.grid.minor=element_blank(),
+      plot.background=element_blank()) +
+    geom_polypath(
+     aes( long, lat, group=group),
+     sp_diff_df,
+     fill="white",
+     alpha=1
+   )  
+ 
+ 
+ my.map
+#Plot.Maps.ggplot("Green Carpet Post 2010 Sep", data.to.plot$Gridref, leics)
+ # Create a box covering the whole by retrieving the bounding box for leics
+ 
+ 
+```
+
+
+## Changes in distribution through time
+
+### Pre 1980
+
+Pre 1980 the taxon was noted to be single brooded and tended to be confined to the Northern part of the county.
+
+```{r Pre-1980, echo=FALSE, include=TRUE}
+pre.1980 <- Green.Carpet.Data[Green.Carpet.Data$YYYY < 1980,]
+
+# Now drop the rows for which there are no Dates
+rows.with.dates <- grepl("\\d{4}-\\d{2}-\\d{2}",pre.1980$YYMMDD )
+rows.to.keep <- which(rows.with.dates)
+pre.1980 <-pre.1980[rows.to.keep,]
+Phenology.Plot("Green Carpet Pre 1980", pre.1980$DOY)
+
+```
+
+
+```{r echo=FALSE, include=TRUE, warning=FALSE,message=FALSE,error=FALSE}
+lat.long <- GBNG.to.Lat.Long(pre.1980$Gridref)
+data.to.plot <- cbind(pre.1980, lat.long) 
+leics_df <- tidy(leics) # Need to load broom
+#ggmap(leics_df)
+#ggplot() +
+ #   geom_path(data = leics_df, aes(x = long, y = lat, group = group)) +
+#    labs(title = "ggplot map of roads")
+
+
+
+ my.map <- ggplot() + geom_path(data = leics_df, aes(x = long, y = lat, group = group)) + 
+  stat_density_2d(  aes( x = Long, y = Lat, fill = stat(level)  ), size = 2, bins = 5, data = data.to.plot, geom = "polygon", contour = TRUE, show.legend = FALSE) +
+  scale_fill_gradient(low = "grey", high= "black") +
+    geom_point(data = data.to.plot, aes(x = Long, y = Lat)) + geom_polygon(data = leics_df, fill=NA, colour="black", aes(x = long, y = lat, group = group)) +
+   theme(axis.line=element_blank(),
+      axis.text.x=element_blank(),
+      axis.text.y=element_blank(),
+      axis.ticks=element_blank(),
+      axis.title.x=element_blank(),
+      axis.title.y=element_blank(),
+      legend.position="none",
+      panel.background=element_blank(),
+      panel.border=element_blank(),
+      panel.grid.major=element_blank(),
+      panel.grid.minor=element_blank(),
+      plot.background=element_blank()) +
+    geom_polypath(
+     aes( long, lat, group=group),
+     sp_diff_df,
+     fill="white",
+     alpha=1
+   )  
+ 
+ 
+ my.map
+#Plot.Maps.ggplot("Green Carpet Post 2010 Sep", data.to.plot$Gridref, leics)
+ # Create a box covering the whole by retrieving the bounding box for leics
+ 
+ 
+```
+
+## Post 1980
+
+Post 1980 the picture has become more complex. The taxon is double brooded with a smaller September occurance. Note that the distribution is more Southerly.
+
+
+```{r echo=FALSE, include=TRUE}
+
+Post.1980 <- Green.Carpet.Data[Green.Carpet.Data$YYYY > 1980,]
+
+# Now drop the rows for which there are no Dates
+rows.with.dates <- grepl("\\d{4}-\\d{2}-\\d{2}",Post.1980$YYMMDD )
+rows.to.keep <- which(rows.with.dates)
+Post.1980 <-Post.1980[rows.to.keep,]
+
+Phenology.Plot("Green Carpet Post 1980", Post.1980$DOY)
+
+```
+
+```{r echo=FALSE, include=TRUE, warning=FALSE,message=FALSE,error=FALSE}
+lat.long <- GBNG.to.Lat.Long(Post.1980$Gridref)
+data.to.plot <- cbind(Post.1980, lat.long) 
+leics_df <- tidy(leics) # Need to load broom
+#ggmap(leics_df)
+#ggplot() +
+ #   geom_path(data = leics_df, aes(x = long, y = lat, group = group)) +
+#    labs(title = "ggplot map of roads")
+
+
+
+ my.map <- ggplot() + geom_path(data = leics_df, aes(x = long, y = lat, group = group)) + 
+  stat_density_2d(  aes( x = Long, y = Lat, fill = stat(level)  ), size = 2, bins = 6, data = data.to.plot, geom = "polygon", contour = TRUE, show.legend = FALSE) +
+  scale_fill_gradient(low = "grey", high= "black") +
+    geom_point(data = data.to.plot, aes(x = Long, y = Lat)) + geom_polygon(data = leics_df, fill=NA, colour="black", aes(x = long, y = lat, group = group)) +
+   theme(axis.line=element_blank(),
+      axis.text.x=element_blank(),
+      axis.text.y=element_blank(),
+      axis.ticks=element_blank(),
+      axis.title.x=element_blank(),
+      axis.title.y=element_blank(),
+      legend.position="none",
+      panel.background=element_blank(),
+      panel.border=element_blank(),
+      panel.grid.major=element_blank(),
+      panel.grid.minor=element_blank(),
+      plot.background=element_blank()) +
+    geom_polypath(
+     aes( long, lat, group=group),
+     sp_diff_df,
+     fill="white",
+     alpha=1
+   )  
+ 
+ 
+ my.map
+#Plot.Maps.ggplot("Green Carpet Post 2010 Sep", data.to.plot$Gridref, leics)
+ # Create a box covering the whole by retrieving the bounding box for leics
+ 
+ 
+```
+
+The chart above shows all of the post 1980 records
+
+```{r echo=FALSE, include=TRUE, warning=FALSE,message=FALSE,error=FALSE}
+
+
+
+# Now drop the rows for which there are no Dates
+#rows.with.dates <- grepl("\\d{4}-\\d{2}-\\d{2}",Green.Carpet.Data$YYMMDD )
+#rows.to.keep <- which(rows.with.dates)
+#Post.1980.Dates <- Green.Carpet.Data[rows.to.keep,]
+
+Post.1980.Dates <- Post.1980[strtoi(Post.1980$MM) == 7,]
+Post.1980.Dates <- na.omit(Post.1980.Dates)
+
+lat.long <- GBNG.to.Lat.Long(Post.1980.Dates$Gridref)
+data.to.plot <- cbind(Post.1980.Dates, lat.long) 
+leics_df <- tidy(leics) # Need to load broom
+#ggmap(leics_df)
+#ggplot() +
+ #   geom_path(data = leics_df, aes(x = long, y = lat, group = group)) +
+#    labs(title = "ggplot map of roads")
+
+
+
+ my.map <- ggplot() + geom_path(data = leics_df, aes(x = long, y = lat, group = group)) + 
+  stat_density_2d(  aes( x = Long, y = Lat, fill = stat(level)  ), size = 2, bins = 5, data = data.to.plot, geom = "polygon", contour = TRUE, show.legend = FALSE) +
+  scale_fill_gradient(low = "grey", high= "black") +
+    geom_point(data = data.to.plot, aes(x = Long, y = Lat)) + geom_polygon(data = leics_df, fill=NA, colour="black", aes(x = long, y = lat, group = group)) +
+   theme(axis.line=element_blank(),
+      axis.text.x=element_blank(),
+      axis.text.y=element_blank(),
+      axis.ticks=element_blank(),
+      axis.title.x=element_blank(),
+      axis.title.y=element_blank(),
+      legend.position="none",
+      panel.background=element_blank(),
+      panel.border=element_blank(),
+      panel.grid.major=element_blank(),
+      panel.grid.minor=element_blank(),
+      plot.background=element_blank()) +
+    geom_polypath(
+     aes( long, lat, group=group),
+     sp_diff_df,
+     fill="white",
+     alpha=1
+   )  
+ 
+ 
+ my.map
+
+```
+
+The chart above shows the June records post 1980 which represent the single brooded population  The more records occur in Rutland than pre 1980.
+
+```{r echo=FALSE, include=TRUE, warning=FALSE,message=FALSE,error=FALSE}
+
+
+
+# Now drop the rows for which there are no Dates
+#rows.with.dates <- grepl("\\d{4}-\\d{2}-\\d{2}",Green.Carpet.Data$YYMMDD )
+#rows.to.keep <- which(rows.with.dates)
+#Post.1980.Dates <- Green.Carpet.Data[rows.to.keep,]
+
+Post.1980.Dates <- Post.1980[strtoi(Post.1980$MM) == 5 ,]
+Post.1980.Dates <- na.omit(Post.1980.Dates)
+
+lat.long <- GBNG.to.Lat.Long(Post.1980.Dates$Gridref)
+data.to.plot <- cbind(Post.1980.Dates, lat.long) 
+leics_df <- tidy(leics) # Need to load broom
+#ggmap(leics_df)
+#ggplot() +
+ #   geom_path(data = leics_df, aes(x = long, y = lat, group = group)) +
+#    labs(title = "ggplot map of roads")
+
+
+
+ my.map <- ggplot() + geom_path(data = leics_df, aes(x = long, y = lat, group = group)) + 
+  stat_density_2d(  aes( x = Long, y = Lat, fill = stat(level)  ), size = 2, bins = 5, data = data.to.plot, geom = "polygon", contour = TRUE, show.legend = FALSE) +
+  scale_fill_gradient(low = "grey", high= "black") +
+    geom_point(data = data.to.plot, aes(x = Long, y = Lat)) + geom_polygon(data = leics_df, fill=NA, colour="black", aes(x = long, y = lat, group = group)) +
+   theme(axis.line=element_blank(),
+      axis.text.x=element_blank(),
+      axis.text.y=element_blank(),
+      axis.ticks=element_blank(),
+      axis.title.x=element_blank(),
+      axis.title.y=element_blank(),
+      legend.position="none",
+      panel.background=element_blank(),
+      panel.border=element_blank(),
+      panel.grid.major=element_blank(),
+      panel.grid.minor=element_blank(),
+      plot.background=element_blank()) +
+    geom_polypath(
+     aes( long, lat, group=group),
+     sp_diff_df,
+     fill="white",
+     alpha=1
+   )  
+ 
+ 
+ my.map
+
+```
+
+In May the taxon is more frequently seen in the south west.
