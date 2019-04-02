@@ -1,0 +1,27 @@
+#' Jon Daws Spider Data
+#'
+#' A dataset containing data about spiders
+#' in Leicestershire held by
+#' Leicestershire and Rutland Environmental Records Centre.
+#'
+#' @format A data frame with 41390 rows and 22 variables:
+#' \describe{
+#'   \item{Recommended.Taxon.Name}{Scientific name of the taxon.}
+#'   \item{Sample.Location}{Descriptive location}
+#'   \item{Recorders}{Usually the name of the recorder. Sometimes an organisation.}
+#'   \item{Grid.Reference}{UK National grid reference usually starting with two letters and then eight digits. Sometimes in numeric format.}
+#'   \item{Date}{Date of the record in the format yyyy-mm-dd. Some records for a time range have been left in this data.}
+#'   \item{Determiner}{Name of the person who confrimed the record. may be the same as the recorder.}
+#'   \item{Abundances}{Abreviations relating to abundance. sub = subadult, m/f = gender, imm = immature}
+#'   \item{Sample.Type}{Method of collection e.g. Swept. Not specified for all entries.}
+#'   \item{Notes}{Descriptive text relating to recording location and method.}
+#'   \item{Source}{Source of the record. Field record, publication etc.}
+#'   \item{LRERC.database.ref}{LRERC internal reference system.}
+#'   \item{LRERC.Doc.Ref}{LRERC internal reference system.}
+#'   \item{Specimen.Source.database.ref.Number}{Reference to a physical specimen.}
+#'   \item{Specimen.Database.Type}{Reference to the source database or notes.}
+#'   \item{LRERC.notes.on.data}{LRERC notes. Often empty}
+#'   ...
+#' }
+#'
+"spider.data"
